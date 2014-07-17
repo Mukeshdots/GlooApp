@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">GlooWorkspace</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="delete">Delete</string>
+    <string name="filter_files"> FILTER FILES</string>
+    <string name="atoz"> a-z</string>
+    <string name="category"> CATEGORY</string>
+    <string name="gmail"> GMAIL</string>
+    <string name="workspace"> WORKSPACE</string>
+    <string name="addto_saved_project"> ADD TO A SAVED PROJECT</string>
+    <string name="undo"> UNDO</string>
+
+</resources>
