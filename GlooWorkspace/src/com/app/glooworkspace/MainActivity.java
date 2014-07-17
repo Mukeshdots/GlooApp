@@ -3,17 +3,25 @@ package com.app.glooworkspace;
 import java.util.ArrayList;
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.ActionMode;
+import android.view.DragEvent;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnDragListener;
+import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.ScrollView;
+import android.widget.TextView;
 
 import com.navdrawer.SimpleSideDrawer;
 
@@ -24,10 +32,12 @@ public class MainActivity extends Activity implements OnClickListener {
 	private int[] listviewItemsImage;
 	private ArrayList<MergeData> mergeListItems = new ArrayList<MergeData>();
 	private ListViewItemsAdapter listviewAdapter;
-	private LinearLayout inflateBottomBar;
+	private LinearLayout inflateBottomBar , dropLayout , projectsLayout;
 	private ImageView imageViewSlider;
+	private ScrollView scrollLayout;
 	public  static SimpleSideDrawer slide_me;
-	public  static LinearLayout dropLayout;
+	private ArrayList<Integer> arrItem = new ArrayList<Integer>(); // this used to check the items which pick
+	private static int  flag = 0; // this flag used to change modes
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +52,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		initView(); // set all views of the layout include id
 		setListViewAdapter(); // add items in adapter and set adapter
 		onItemClick(); // on items click event
+		onDrop(); // set items on drop
 	}
 
 	private void onListItemsName() {
@@ -72,6 +83,8 @@ public class MainActivity extends Activity implements OnClickListener {
 		slide_me = new SimpleSideDrawer(MainActivity.this);
 		slide_me.setRightBehindContentView(R.layout.inflate_dropdown);
 		dropLayout = (LinearLayout) findViewById(R.id.drop_layout);
+		scrollLayout = (ScrollView) findViewById(R.id.scroll_layout);
+		projectsLayout = (LinearLayout) findViewById(R.id.projects_layout);
 	}
 
 	private void onItemClick() {
@@ -86,6 +99,170 @@ public class MainActivity extends Activity implements OnClickListener {
 		// get response on listview choice mode
 		listviewItems.setMultiChoiceModeListener(new ModeCallback());
 
+	}
+
+	private void onDrop() {
+		scrollLayout.setOnDragListener(new OnDragListener() {
+
+			public boolean onDrag(View v, DragEvent event) {
+				switch (event.getAction()) {
+				case DragEvent.ACTION_DRAG_ENTERED:
+					if(slide_me.isClosed()){
+						slide_me.openRightSide();
+					}
+					Log.e("ACTION_DRAG_ENTERED " , "ACTION_DRAG_ENTERED ");
+					v.setBackgroundColor(Color.GRAY);
+					break;
+
+				case DragEvent.ACTION_DRAG_EXITED:
+					Log.e("ACTION_DRAG_EXITED " , "ACTION_DRAG_EXITED ");
+					v.setBackgroundColor(Color.TRANSPARENT);
+					break;
+
+				case DragEvent.ACTION_DRAG_STARTED:
+					Log.e("ACTION_DRAG_STARTED " , "ACTION_DRAG_STARTED ");
+					return true;
+
+				case DragEvent.ACTION_DRAG_ENDED:
+					Log.e("ACTION_DRAG_ENDED " , "ACTION_DRAG_ENDED " + flag);
+					if(flag == 1){
+						listviewItems.post(new Runnable() {
+							@Override
+							public void run() {
+								listviewItems.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+								flag = 0;
+							}
+						});
+					}
+					break;
+
+				case DragEvent.ACTION_DROP:
+					v.setBackgroundColor(Color.TRANSPARENT);
+
+					Log.e("ACTION_DROP " , "ACTION_DROP ");
+
+					listviewItems.post(new Runnable() {
+						@Override
+						public void run() {
+							listviewItems.setChoiceMode(ListView.CHOICE_MODE_NONE);
+						}
+					});
+
+					flag = 1;
+
+					return processDrop(event);
+				}
+				return false;
+			}
+		});
+	}
+
+	private boolean processDrop(DragEvent event) {
+		Log.e("processDrop " , "processDrop ");
+		addLayout(event);
+		return true;
+	}
+
+
+	private void addLayout(DragEvent event) {
+
+		// This layout is for main layout, for top to add the main layout Heading and Sub Folders and than
+		// it add into the drop layout.
+		LinearLayout layoutProject = new LinearLayout(this);
+		layoutProject.setOrientation(LinearLayout.VERTICAL);
+		layoutProject.setGravity(Gravity.CENTER_HORIZONTAL);
+
+		// This layout set top layout heading, declearing here due to add in drop Layout. 
+		LinearLayout layoutProjectHeading = new LinearLayout(this);
+		topLayoutHeadingFolder(layoutProjectHeading);
+		
+		// This layout used to set image and the name of the sublayout folder.  
+		LinearLayout layout = new LinearLayout(this);
+		layout.setOrientation(LinearLayout.VERTICAL);
+		layout.setGravity(Gravity.CENTER_HORIZONTAL);
+		layout.setLayoutParams(new LayoutParams(60, LayoutParams.WRAP_CONTENT));
+		layout.setPadding( 0 , 2 , 0 , 2 );
+
+
+		if(arrItem.size()>0){
+			for(int i=0 ; i<arrItem.size() ; i++){
+				View v = listviewAdapter.getView(arrItem.get(i), null , null);
+				if(v!=null){
+					String val = listviewItemsName[arrItem.get(i)];
+
+					LinearLayout layoutInside = new LinearLayout(this);
+					layoutInside.setOrientation(LinearLayout.VERTICAL);
+					layoutInside.setGravity(Gravity.CENTER_HORIZONTAL);
+					layoutInside.setLayoutParams(new LayoutParams(60, 60));
+					layoutInside.addView(v);
+
+					TextView name = new TextView(this);
+					name.setGravity(Gravity.CENTER_HORIZONTAL);
+					name.setText(val);
+
+					layout.addView(layoutInside);
+					layout.addView(name);
+
+				}
+			}
+
+			
+			layoutProject.addView(layoutProjectHeading);
+			layoutProject.addView(layout);
+			dropLayout.addView(layoutProject);
+
+			bottomLayoutFolder(); // This Method used to add the folder in to the list layout of the projects. 
+
+			arrItem.clear();
+
+			listviewItems.post(new Runnable() {
+				@Override
+				public void run() {
+					listviewItems.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+				}
+			});
+		}
+	}
+
+	private void topLayoutHeadingFolder(LinearLayout layoutProjectHeading) {
+		
+		layoutProjectHeading.setOrientation(LinearLayout.HORIZONTAL);
+		layoutProjectHeading.setPadding(5,5,5,5);
+		layoutProjectHeading.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+		layoutProjectHeading.setBackgroundResource(android.R.color.black);
+
+		ImageView imageIcon = new ImageView(this);
+		imageIcon.setBackgroundResource(R.drawable.ic_launcher);
+		imageIcon.setLayoutParams(new LayoutParams(30, 30));
+
+		TextView projectHeading = new TextView(this);
+		projectHeading.setText("PROJECT ");
+		projectHeading.setPadding(10,0,0,0);
+
+		layoutProjectHeading.addView(imageIcon);
+		layoutProjectHeading.addView(projectHeading);
+	}
+
+	private void bottomLayoutFolder() {
+
+		LinearLayout layoutProjectsHeading = new LinearLayout(this);
+		layoutProjectsHeading.setOrientation(LinearLayout.HORIZONTAL);
+		layoutProjectsHeading.setPadding(5,5,5,5);
+		layoutProjectsHeading.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
+		layoutProjectsHeading.setBackgroundResource(android.R.color.black);
+
+		ImageView imgIcon = new ImageView(this);
+		imgIcon.setBackgroundResource(R.drawable.ic_launcher);
+		imgIcon.setLayoutParams(new LayoutParams(30, 30));
+
+		TextView projectsHeading = new TextView(this);
+		projectsHeading.setText("PROJECT ");
+		projectsHeading.setPadding(10,0,0,0);
+
+		layoutProjectsHeading.addView(imgIcon);
+		layoutProjectsHeading.addView(projectsHeading);
+
+		projectsLayout.addView(layoutProjectsHeading);
 	}
 
 	@Override
@@ -105,36 +282,43 @@ public class MainActivity extends Activity implements OnClickListener {
 	}
 
 	private class ModeCallback implements ListView.MultiChoiceModeListener {
-		
+
 		@Override
 		public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+			Log.e("onCreateActionMode","onCreateActionMode");
 			return true;
 		}
 
 		@Override
 		public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+			Log.e("onPrepareActionMode","onPrepareActionMode");
+
 			return true;
 		}
 
 		@Override
 		public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
 
+			Log.e("onActionItemClicked","onActionItemClicked");
+
 			return true;
 		}
 
 		@Override
 		public void onDestroyActionMode(ActionMode mode) {
-			
+			Log.e("onDestroyActionMode","onDestroyActionMode");
+
 			listviewAdapter.removeSelection();
 			inflateBottomBar.setVisibility(View.GONE);
-
 		}
 
 		@Override
 		public void onItemCheckedStateChanged(ActionMode mode, int position,
 				long id, boolean checked) {
 
+			Log.e("onItemCheckedStateChanged","onItemCheckedStateChanged");
 			inflateBottomBar.setVisibility(View.VISIBLE);
+			arrItem.add(position);
 		}
 	}
 }

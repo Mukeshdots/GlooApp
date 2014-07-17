@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Activity;
+import android.content.ClipData;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -50,7 +51,11 @@ public class ListViewItemsAdapter extends ArrayAdapter<MergeData>{
 		holder.itemImage.setImageResource(inflateMergeItems.get(position).getListViewInflateImage());
 
 		// Create a Builder to create shadow for drag and drop items
-		view.startDrag(null, new MyDragBuilder(view , position), null, 0);
+		
+		final String title = "Drag";
+		final String textData = title + ":" + position;
+		ClipData data = ClipData.newPlainText(title, textData);
+		view.startDrag(data, new MyDragShadowBuilder(view), null, 0);
 		
 		return view;
 	}
