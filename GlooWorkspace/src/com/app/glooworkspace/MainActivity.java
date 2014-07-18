@@ -5,15 +5,18 @@ import java.util.ArrayList;
 import android.app.Activity;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.ActionMode;
 import android.view.DragEvent;
 import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnDragListener;
+import android.view.View.OnTouchListener;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 import android.view.WindowManager;
@@ -25,19 +28,24 @@ import android.widget.TextView;
 
 import com.navdrawer.SimpleSideDrawer;
 
-public class MainActivity extends Activity implements OnClickListener {
+public class MainActivity extends Activity implements OnClickListener , OnTouchListener{
 
+	private DrawerLayout drawerLayout;
 	private ListView listviewItems;
 	private String[] listviewItemsName;
 	private int[] listviewItemsImage;
 	private ArrayList<MergeData> mergeListItems = new ArrayList<MergeData>();
 	private ListViewItemsAdapter listviewAdapter;
-	private LinearLayout inflateBottomBar , dropLayout , projectsLayout;
+	private LinearLayout inflateBottomBar , dropLayout , projectsLayout , dragDropShow , dragDropHide;
 	private ImageView imageViewSlider;
 	private ScrollView scrollLayout;
+	private TextView undo;
 	public  static SimpleSideDrawer slide_me;
 	private ArrayList<Integer> arrItem = new ArrayList<Integer>(); // this used to check the items which pick
-	private static int  flag = 0; // this flag used to change modes
+	private static int  flag = 0 , // this flag used to change modes 
+			flagCheckFocus  = 0,   // this flag used to change focus on slide view pinch to zoom  
+			flagtouchState = 0;
+
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -76,16 +84,36 @@ public class MainActivity extends Activity implements OnClickListener {
 	}
 
 	private void initView() {
-		inflateBottomBar = (LinearLayout) findViewById(R.id.inflate_BottomBar);
-		listviewItems = (ListView) findViewById(R.id.list_items);
-		imageViewSlider = (ImageView) findViewById(R.id.imageViewSlider);
+		drawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
+		inflateBottomBar = (LinearLayout) findViewById (R.id.inflate_BottomBar);
+		listviewItems = (ListView) findViewById (R.id.list_items);
+		imageViewSlider = (ImageView) findViewById (R.id.imageViewSlider);
 		// add sliding layout and inflate layout init and get items id
-		slide_me = new SimpleSideDrawer(MainActivity.this);
-		slide_me.setRightBehindContentView(R.layout.inflate_dropdown);
-		dropLayout = (LinearLayout) findViewById(R.id.drop_layout);
-		scrollLayout = (ScrollView) findViewById(R.id.scroll_layout);
-		projectsLayout = (LinearLayout) findViewById(R.id.projects_layout);
+		slide_me = new SimpleSideDrawer (MainActivity.this);
+		slide_me.setRightBehindContentView (R.layout.inflate_dropdown);
+		dropLayout = (LinearLayout) findViewById (R.id.drop_layout);
+		scrollLayout = (ScrollView) findViewById (R.id.scroll_layout);
+		projectsLayout = (LinearLayout) findViewById (R.id.projects_layout);
+		dragDropHide = (LinearLayout) findViewById (R.id.dragdrop_hidelayout);
+		dragDropShow = (LinearLayout) findViewById (R.id.dragdrop_showlayout);
+		undo = (TextView) findViewById(R.id.textViewUndo);
+
+		if(flagCheckFocus == 0){
+			scrollLayout.setOnTouchListener(this);
+		}else{
+			scrollLayout.setOnTouchListener(null);
+		}
+		
+		undo.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				slide_me.openRightSide();
+				dragDropHide.setVisibility(View.VISIBLE);
+				dragDropShow.setBackgroundResource(android.R.color.transparent);
+			}
+		});
 	}
+
 
 	private void onItemClick() {
 		imageViewSlider.setOnClickListener(this);	
@@ -120,6 +148,7 @@ public class MainActivity extends Activity implements OnClickListener {
 					break;
 
 				case DragEvent.ACTION_DRAG_STARTED:
+					flagCheckFocus = 1;
 					Log.e("ACTION_DRAG_STARTED " , "ACTION_DRAG_STARTED ");
 					return true;
 
@@ -131,6 +160,7 @@ public class MainActivity extends Activity implements OnClickListener {
 							public void run() {
 								listviewItems.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
 								flag = 0;
+								flagCheckFocus = 0;
 							}
 						});
 					}
@@ -175,7 +205,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		// This layout set top layout heading, declearing here due to add in drop Layout. 
 		LinearLayout layoutProjectHeading = new LinearLayout(this);
 		topLayoutHeadingFolder(layoutProjectHeading);
-		
+
 		// This layout used to set image and the name of the sublayout folder.  
 		LinearLayout layout = new LinearLayout(this);
 		layout.setOrientation(LinearLayout.VERTICAL);
@@ -206,7 +236,7 @@ public class MainActivity extends Activity implements OnClickListener {
 				}
 			}
 
-			
+
 			layoutProject.addView(layoutProjectHeading);
 			layoutProject.addView(layout);
 			dropLayout.addView(layoutProject);
@@ -225,7 +255,7 @@ public class MainActivity extends Activity implements OnClickListener {
 	}
 
 	private void topLayoutHeadingFolder(LinearLayout layoutProjectHeading) {
-		
+
 		layoutProjectHeading.setOrientation(LinearLayout.HORIZONTAL);
 		layoutProjectHeading.setPadding(5,5,5,5);
 		layoutProjectHeading.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
@@ -271,6 +301,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		case R.id.imageViewSlider:
 			if(slide_me.isClosed()){
 				slide_me.openRightSide();
+
 			}
 			else{
 				slide_me.closeRightSide(); 
@@ -320,5 +351,42 @@ public class MainActivity extends Activity implements OnClickListener {
 			inflateBottomBar.setVisibility(View.VISIBLE);
 			arrItem.add(position);
 		}
+	}
+
+	@Override
+	public boolean onTouch(View v, MotionEvent event) {
+		switch (event.getAction()) {
+		case MotionEvent.ACTION_MOVE:
+
+			Log.e("ACTION_MOVE", "ACTION_MOVE");
+
+			if(flagtouchState == 0){
+			//	slide_me.openRightSide();
+				
+				drawerLayout.setVisibility(View.GONE);
+				
+				dragDropHide.setVisibility(View.GONE);
+				dragDropShow.setBackgroundResource(R.drawable.trans_bg);
+				
+
+				/*LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+				dragDropShow.setLayoutParams(lp);
+				slide_me.openRightSide();*/
+				
+			}
+
+			break;
+		case MotionEvent.ACTION_DOWN:
+			flagtouchState = 0;
+			Log.e("ACTION_DOWN", "ACTION_DOWN");
+			break;
+		case MotionEvent.ACTION_UP:
+			//slide_me.openRightSide();
+			flagtouchState = 1;
+			break;
+		default:
+			break;
+		}
+		return false;
 	}
 }
