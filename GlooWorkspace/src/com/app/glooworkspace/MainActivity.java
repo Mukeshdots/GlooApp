@@ -31,7 +31,7 @@ import com.navdrawer.SimpleSideDrawer;
 public class MainActivity extends Activity implements OnClickListener , OnTouchListener{
 
 	private DrawerLayout drawerLayout;
-	private ListView listviewItems;
+	public  static ListView listviewItems;
 	private String[] listviewItemsName;
 	private int[] listviewItemsImage;
 	private ArrayList<MergeData> mergeListItems = new ArrayList<MergeData>();
@@ -41,11 +41,9 @@ public class MainActivity extends Activity implements OnClickListener , OnTouchL
 	private ScrollView scrollLayout;
 	private TextView undo;
 	public  static SimpleSideDrawer slide_me;
-	private ArrayList<Integer> arrItem = new ArrayList<Integer>(); // this used to check the items which pick
+	public  static ArrayList<Integer> arrItem = new ArrayList<Integer>(); // this used to check the items which pick
 	private static int  flag = 0 , // this flag used to change modes 
-			flagCheckFocus  = 0,   // this flag used to change focus on slide view pinch to zoom  
-			flagtouchState = 0;
-
+			flagCheckFocus  = 0;   // this flag used to change focus on slide view pinch to zoom  
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -77,6 +75,7 @@ public class MainActivity extends Activity implements OnClickListener , OnTouchL
 
 
 	private void onMergeListViewItems() {
+
 		for (int arrLength = 0; arrLength < listviewItemsImage.length; arrLength++) {
 			MergeData mergeData = new MergeData(listviewItemsImage[arrLength],listviewItemsName[arrLength]);
 			mergeListItems.add(mergeData);
@@ -84,13 +83,15 @@ public class MainActivity extends Activity implements OnClickListener , OnTouchL
 	}
 
 	private void initView() {
+
 		drawerLayout = (DrawerLayout) findViewById(R.id.drawerLayout);
 		inflateBottomBar = (LinearLayout) findViewById (R.id.inflate_BottomBar);
 		listviewItems = (ListView) findViewById (R.id.list_items);
 		imageViewSlider = (ImageView) findViewById (R.id.imageViewSlider);
-		// add sliding layout and inflate layout init and get items id
+		// add sliding layout and inflate layout in it and get items id
 		slide_me = new SimpleSideDrawer (MainActivity.this);
 		slide_me.setRightBehindContentView (R.layout.inflate_dropdown);
+
 		dropLayout = (LinearLayout) findViewById (R.id.drop_layout);
 		scrollLayout = (ScrollView) findViewById (R.id.scroll_layout);
 		projectsLayout = (LinearLayout) findViewById (R.id.projects_layout);
@@ -103,17 +104,16 @@ public class MainActivity extends Activity implements OnClickListener , OnTouchL
 		}else{
 			scrollLayout.setOnTouchListener(null);
 		}
-		
+
 		undo.setOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				slide_me.openRightSide();
+				/*	slide_me.openRightSide();
 				dragDropHide.setVisibility(View.VISIBLE);
-				dragDropShow.setBackgroundResource(android.R.color.transparent);
+				dragDropShow.setBackgroundResource(android.R.color.transparent);*/
 			}
 		});
 	}
-
 
 	private void onItemClick() {
 		imageViewSlider.setOnClickListener(this);	
@@ -141,7 +141,6 @@ public class MainActivity extends Activity implements OnClickListener , OnTouchL
 					Log.e("ACTION_DRAG_ENTERED " , "ACTION_DRAG_ENTERED ");
 					v.setBackgroundColor(Color.GRAY);
 					break;
-
 				case DragEvent.ACTION_DRAG_EXITED:
 					Log.e("ACTION_DRAG_EXITED " , "ACTION_DRAG_EXITED ");
 					v.setBackgroundColor(Color.TRANSPARENT);
@@ -177,9 +176,7 @@ public class MainActivity extends Activity implements OnClickListener , OnTouchL
 							listviewItems.setChoiceMode(ListView.CHOICE_MODE_NONE);
 						}
 					});
-
 					flag = 1;
-
 					return processDrop(event);
 				}
 				return false;
@@ -301,10 +298,9 @@ public class MainActivity extends Activity implements OnClickListener , OnTouchL
 		case R.id.imageViewSlider:
 			if(slide_me.isClosed()){
 				slide_me.openRightSide();
-
 			}
 			else{
-				slide_me.closeRightSide(); 
+				slide_me.closeRightSide();
 			}
 			break;
 		default:
@@ -339,6 +335,7 @@ public class MainActivity extends Activity implements OnClickListener , OnTouchL
 		public void onDestroyActionMode(ActionMode mode) {
 			Log.e("onDestroyActionMode","onDestroyActionMode");
 
+			arrItem.clear();
 			listviewAdapter.removeSelection();
 			inflateBottomBar.setVisibility(View.GONE);
 		}
@@ -349,7 +346,16 @@ public class MainActivity extends Activity implements OnClickListener , OnTouchL
 
 			Log.e("onItemCheckedStateChanged","onItemCheckedStateChanged");
 			inflateBottomBar.setVisibility(View.VISIBLE);
-			arrItem.add(position);
+
+			if(checked){
+				arrItem.add((int) id);
+			}else{
+				for(int i = 0 ; i < arrItem.size() ; i++){
+					if(arrItem.get(i).equals((int) id)){
+						arrItem.remove(i);
+					}
+				}
+			}			
 		}
 	}
 
@@ -360,29 +366,19 @@ public class MainActivity extends Activity implements OnClickListener , OnTouchL
 
 			Log.e("ACTION_MOVE", "ACTION_MOVE");
 
-			if(flagtouchState == 0){
-			//	slide_me.openRightSide();
-				
-				drawerLayout.setVisibility(View.GONE);
-				
+			/*drawerLayout.setVisibility(View.GONE);
 				dragDropHide.setVisibility(View.GONE);
-				dragDropShow.setBackgroundResource(R.drawable.trans_bg);
-				
+				dragDropShow.setBackgroundResource(R.drawable.trans_bg);*/
 
-				/*LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+			/*LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
 				dragDropShow.setLayoutParams(lp);
 				slide_me.openRightSide();*/
-				
-			}
+
 
 			break;
 		case MotionEvent.ACTION_DOWN:
-			flagtouchState = 0;
-			Log.e("ACTION_DOWN", "ACTION_DOWN");
 			break;
 		case MotionEvent.ACTION_UP:
-			//slide_me.openRightSide();
-			flagtouchState = 1;
 			break;
 		default:
 			break;

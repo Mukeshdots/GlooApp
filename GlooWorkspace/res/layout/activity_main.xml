@@ -131,7 +131,8 @@
             android:layout_marginTop="5dp"
             android:layout_weight="0.45"
             android:background="@drawable/trans_bg"
-            android:cacheColorHint="@android:color/transparent" />
+            android:cacheColorHint="@android:color/transparent"
+            android:listSelector="@drawable/list_anim" />
 
         <LinearLayout
             android:id="@+id/inflate_BottomBar"
