@@ -2,6 +2,7 @@
     android:id="@+id/drawerLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
+- 
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -10,6 +11,7 @@
         android:orientation="vertical"
         android:visibility="visible"
         android:weightSum="4" >
+- 
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -41,6 +43,7 @@
                 android:paddingTop="5dp"
                 android:src="@drawable/menu_option" />
         </RelativeLayout>
+- 
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -68,6 +71,7 @@
                 android:padding="3dp"
                 android:src="@drawable/search" />
         </LinearLayout>
+- 
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -84,6 +88,7 @@
                 android:text="@string/filter_files"
                 android:textColor="@android:color/white"
                 android:textStyle="bold" />
+- 
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -121,18 +126,47 @@
                     android:textStyle="bold" />
             </LinearLayout>
         </LinearLayout>
+- 
 
-        <ListView
-            android:id="@+id/list_items"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_marginLeft="10dp"
             android:layout_marginRight="10dp"
             android:layout_marginTop="5dp"
-            android:layout_weight="0.45"
-            android:background="@drawable/trans_bg"
-            android:cacheColorHint="@android:color/transparent"
-            android:listSelector="@drawable/list_anim" />
+            android:layout_weight="0.45" >
+- 
+
+            <ScrollView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" >
+- 
+
+                <FrameLayout
+                    android:layout_width="fill_parent"
+                    android:layout_height="fill_parent"
+                    android:orientation="vertical" >
+
+                    <LinearLayout
+                        android:id="@+id/layout_list_items_show"
+                        android:layout_width="fill_parent"
+                        android:layout_height="fill_parent"
+                        android:gravity="left|center_vertical"
+                        android:orientation="vertical"
+                        android:padding="10dp" />
+
+                    <LinearLayout
+                        android:id="@+id/layout_list_items_hideshadow"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="left|center_vertical"
+                        android:orientation="vertical"
+                        android:padding="10dp"
+                        android:visibility="invisible" />
+                </FrameLayout>
+            </ScrollView>
+        </LinearLayout>
+- 
 
         <LinearLayout
             android:id="@+id/inflate_BottomBar"
