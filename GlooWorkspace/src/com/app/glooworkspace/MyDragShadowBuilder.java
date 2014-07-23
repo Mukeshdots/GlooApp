@@ -1,4 +1,3 @@
-
 package com.app.glooworkspace;
 
 import android.graphics.Canvas;

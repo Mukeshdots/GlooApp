@@ -121,7 +121,7 @@ public class MainActivity extends Activity implements OnClickListener , OnTouchL
 				switch (event.getAction()) {
 				case DragEvent.ACTION_DRAG_ENTERED:
 					if(slide_me.isClosed()){
-						slide_me.openRightSide();
+						slide_me.toggleRightDrawer();
 					}
 					Log.e("ACTION_DRAG_ENTERED " , "ACTION_DRAG_ENTERED ");
 					v.setBackgroundColor(Color.GRAY);
@@ -195,11 +195,12 @@ public class MainActivity extends Activity implements OnClickListener , OnTouchL
 		bottomLayoutFolder();
 	
 		if(slide_me.isClosed()){
-			slide_me.openRightSide();
+			slide_me.toggleRightDrawer();
 		}
 		else{
 			slide_me.closeRightSide();
 		}
+		
 	}
 
 	private void topLayoutHeadingFolder(LinearLayout layoutProjectHeading) {
@@ -219,6 +220,7 @@ public class MainActivity extends Activity implements OnClickListener , OnTouchL
 
 		layoutProjectHeading.addView(imageIcon);
 		layoutProjectHeading.addView(projectHeading);
+		
 	}
 
 	private void bottomLayoutFolder() {
@@ -241,6 +243,7 @@ public class MainActivity extends Activity implements OnClickListener , OnTouchL
 		layoutProjectsHeading.addView(projectsHeading);
 
 		projectsLayout.addView(layoutProjectsHeading);
+		
 	}
 
 	@Override
@@ -248,7 +251,8 @@ public class MainActivity extends Activity implements OnClickListener , OnTouchL
 		switch (v.getId()) {
 		case R.id.imageViewSlider:
 			if(slide_me.isClosed()){
-				slide_me.openRightSide();
+			//	slide_me.openRightSide();
+				slide_me.toggleRightDrawer();
 			}
 			else{
 				slide_me.closeRightSide();
@@ -446,7 +450,6 @@ public class MainActivity extends Activity implements OnClickListener , OnTouchL
 		layoutSelectedItem.addView(textViewSelectedItem);
 
 		listHideLayout.addView(layoutSelectedItem);
-		
-		
 	}
+	
 }
