@@ -8,10 +8,13 @@ import android.app.Activity;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.DragEvent;
 import android.view.Gravity;
 import android.view.MotionEvent;
+import android.view.ScaleGestureDetector;
+import android.view.ScaleGestureDetector.SimpleOnScaleGestureListener;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnDragListener;
@@ -19,26 +22,27 @@ import android.view.View.OnTouchListener;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-import com.navdrawer.SimpleSideDrawer;
-
-public class MainActivity extends Activity implements OnClickListener , OnTouchListener{
+public class MainActivity extends Activity implements OnClickListener{
 
 	private String[] listviewItemsName;
 	private int[] listviewItemsImage;
 	private ArrayList<MergeData> mergeListItems = new ArrayList<MergeData>();
-	private LinearLayout dropLayout, listShowLayout , listHideLayout , projectsLayout;	
+	private LinearLayout dropLayout, listShowLayout , listHideLayout , projectsLayout , layoutMain;	
 	private ImageView imageViewSlider;
 	private ScrollView scrollLayout;
 	private TextView undo;
-	public  static SimpleSideDrawer slide_me;
-	private static int  flagCheckFocus  = 0;   // this flag used to change focus on slide view pinch to zoom  
-
+	public  static SlideHolder slide_holder;
+	private static View viewInflate;
+	private int windowWidth;
+	private ScaleGestureDetector scaleGestureDetector;
+	private FrameLayout.LayoutParams frameLayout ;
 	private int firstClicked = -1 , clicked=-1 , firstTimeClicked = 0;
 	private ArrayList<Integer> arrClickedItems = new ArrayList<Integer>();
 	private boolean islongClicked = false;
@@ -50,6 +54,7 @@ public class MainActivity extends Activity implements OnClickListener , OnTouchL
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(R.layout.activity_main);
 
+		onViewWidth();
 		onListItemsName(); // Add array of the items name
 		onListItemsImage(); // Add array of the items image
 		onMergeListViewItems(); // merge both the items array to add in a single list adapter
@@ -80,24 +85,33 @@ public class MainActivity extends Activity implements OnClickListener , OnTouchL
 		}
 	}
 
+	private void onViewWidth() {
+		DisplayMetrics displaymetrics = new DisplayMetrics();
+		getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
+		windowWidth = displaymetrics.widthPixels;
+		scaleGestureDetector = new ScaleGestureDetector(this, new OnPinchListener());
+	}
+
 	private void initView() {
 
+		layoutMain = (LinearLayout) findViewById(R.id.layoutMain);
 		listShowLayout = (LinearLayout) findViewById(R.id.layout_list_items_show);
 		listHideLayout = (LinearLayout) findViewById(R.id.layout_list_items_hideshadow);
 		imageViewSlider = (ImageView) findViewById (R.id.imageViewSlider);
 		// add sliding layout and inflate layout in it and get items id
-		slide_me = new SimpleSideDrawer (MainActivity.this);
-		slide_me.setRightBehindContentView (R.layout.inflate_dropdown);
+		//slide_me = new SimpleSideDrawer (MainActivity.this);
+		slide_holder = (SlideHolder) findViewById(R.id.slideLayout);
+		//slide_me.setRightBehindContentView (R.layout.inflate_dropdown);
+
+		viewInflate = (View) findViewById(R.id.slide_inflate_layout);
+		frameLayout = new FrameLayout.LayoutParams((windowWidth/2+30),LayoutParams.MATCH_PARENT);
+		viewInflate.setLayoutParams(frameLayout);
+
+
 		projectsLayout = (LinearLayout) findViewById (R.id.projects_layout);
 		dropLayout = (LinearLayout) findViewById (R.id.drop_layout);
 		scrollLayout = (ScrollView) findViewById (R.id.scroll_layout);
 		undo = (TextView) findViewById(R.id.textViewUndo);
-
-		if(flagCheckFocus == 0){
-			scrollLayout.setOnTouchListener(this);
-		}else{
-			scrollLayout.setOnTouchListener(null);
-		}
 
 		undo.setOnClickListener(new View.OnClickListener() {
 			@Override
@@ -107,6 +121,60 @@ public class MainActivity extends Activity implements OnClickListener , OnTouchL
 				dragDropShow.setBackgroundResource(android.R.color.transparent);*/
 			}
 		});
+
+		scrollLayout.setOnTouchListener(new OnTouchListener() {
+
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+				// TODO Auto-generated method stub
+				scaleGestureDetector.onTouchEvent(event);
+				return true;
+			}
+		});
+		
+		layoutMain.setOnDragListener(new OnDragListener() {
+
+			public boolean onDrag(View v, DragEvent event) {
+				switch (event.getAction()) {
+				/*case DragEvent.ACTION_DRAG_ENTERED:
+					if(slide_me.isClosed()){
+						slide_me.toggleRightDrawer();
+					}
+					slide_holder.toggle();
+					Log.e("ACTION_DRAG_ENTERED " , "ACTION_DRAG_ENTERED ");
+					v.setBackgroundColor(Color.GRAY);
+					break;
+				case DragEvent.ACTION_DRAG_EXITED:
+					if(!slide_me.isClosed()){
+						slide_me.closeRightSide();
+					}
+					slide_holder.toggle();
+					Log.e("ACTION_DRAG_EXITED " , "ACTION_DRAG_EXITED ");
+					v.setBackgroundColor(Color.TRANSPARENT);
+					break;
+				 */
+				case DragEvent.ACTION_DRAG_STARTED:
+					Log.e("ACTION_DRAG_STARTED " , "ACTION_DRAG_STARTED ");
+					return true;
+				case DragEvent.ACTION_DRAG_ENTERED:
+					slide_holder.toggle();
+					Log.e("ACTION_DRAG_ENTERED " , "ACTION_DRAG_ENTERED ");
+					break;
+					
+					/*
+				case DragEvent.ACTION_DRAG_ENDED:
+					Log.e("ACTION_DRAG_ENDED " , "ACTION_DRAG_ENDED ");
+					break;
+
+				case DragEvent.ACTION_DROP:
+					v.setBackgroundColor(Color.TRANSPARENT);
+					Log.e("ACTION_DROP " , "ACTION_DROP ");
+					return processDrop(event);*/
+				}
+				return false;
+			}
+		});
+
 	}
 
 
@@ -115,14 +183,12 @@ public class MainActivity extends Activity implements OnClickListener , OnTouchL
 	}
 
 	private void onDrop() {
+
 		scrollLayout.setOnDragListener(new OnDragListener() {
 
 			public boolean onDrag(View v, DragEvent event) {
 				switch (event.getAction()) {
 				case DragEvent.ACTION_DRAG_ENTERED:
-					if(slide_me.isClosed()){
-						slide_me.toggleRightDrawer();
-					}
 					Log.e("ACTION_DRAG_ENTERED " , "ACTION_DRAG_ENTERED ");
 					v.setBackgroundColor(Color.GRAY);
 					break;
@@ -130,12 +196,10 @@ public class MainActivity extends Activity implements OnClickListener , OnTouchL
 					Log.e("ACTION_DRAG_EXITED " , "ACTION_DRAG_EXITED ");
 					v.setBackgroundColor(Color.TRANSPARENT);
 					break;
-
+				 
 				case DragEvent.ACTION_DRAG_STARTED:
-					flagCheckFocus = 1;
 					Log.e("ACTION_DRAG_STARTED " , "ACTION_DRAG_STARTED ");
 					return true;
-
 				case DragEvent.ACTION_DRAG_ENDED:
 					Log.e("ACTION_DRAG_ENDED " , "ACTION_DRAG_ENDED ");
 					break;
@@ -193,14 +257,14 @@ public class MainActivity extends Activity implements OnClickListener , OnTouchL
 
 		dropLayout.addView(layoutProject);
 		bottomLayoutFolder();
-	
-		if(slide_me.isClosed()){
+
+		/*if(slide_me.isClosed()){
 			slide_me.toggleRightDrawer();
 		}
 		else{
 			slide_me.closeRightSide();
-		}
-		
+		}*/
+		slide_holder.toggle();
 	}
 
 	private void topLayoutHeadingFolder(LinearLayout layoutProjectHeading) {
@@ -220,7 +284,7 @@ public class MainActivity extends Activity implements OnClickListener , OnTouchL
 
 		layoutProjectHeading.addView(imageIcon);
 		layoutProjectHeading.addView(projectHeading);
-		
+
 	}
 
 	private void bottomLayoutFolder() {
@@ -243,40 +307,25 @@ public class MainActivity extends Activity implements OnClickListener , OnTouchL
 		layoutProjectsHeading.addView(projectsHeading);
 
 		projectsLayout.addView(layoutProjectsHeading);
-		
+
 	}
 
 	@Override
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.imageViewSlider:
-			if(slide_me.isClosed()){
+			/*if(slide_me.isClosed()){
 			//	slide_me.openRightSide();
 				slide_me.toggleRightDrawer();
 			}
 			else{
 				slide_me.closeRightSide();
-			}
+			}*/
+			slide_holder.toggle();
 			break;
 		default:
 			break;
 		}
-	}
-
-	@Override
-	public boolean onTouch(View v, MotionEvent event) {
-		switch (event.getAction()) {
-		case MotionEvent.ACTION_MOVE:
-			Log.e("ACTION_MOVE", "ACTION_MOVE");
-			break;
-		case MotionEvent.ACTION_DOWN:
-			break;
-		case MotionEvent.ACTION_UP:
-			break;
-		default:
-			break;
-		}
-		return false;
 	}
 
 	@TargetApi(Build.VERSION_CODES.JELLY_BEAN)
@@ -451,5 +500,58 @@ public class MainActivity extends Activity implements OnClickListener , OnTouchL
 
 		listHideLayout.addView(layoutSelectedItem);
 	}
-	
+
+
+	private class OnPinchListener extends SimpleOnScaleGestureListener {
+
+		float startingSpan; 
+		float endSpan;
+		float startFocusX;
+		float startFocusY;
+
+		public boolean onScaleBegin(ScaleGestureDetector detector) {
+			startingSpan = detector.getCurrentSpan();
+			startFocusX = detector.getFocusX();
+			startFocusY = detector.getFocusY();
+			return true;
+		}
+
+
+		public boolean onScale(ScaleGestureDetector detector) {
+
+			/*frameLayout = new FrameLayout.LayoutParams((int)detector.getFocusX(), (int) detector.getFocusY());
+			viewInflate.setLayoutParams(frameLayout);*/
+			return true;
+		}
+
+		public void onScaleEnd(ScaleGestureDetector detector) {
+
+			float currentx = detector.getFocusX();
+			float currenty = detector.getFocusY();
+
+
+			Log.e("Current x" , "X"+ currentx);
+			Log.e("Current y" , "y"+ currenty);
+			Log.e("last x" , "X"+ startFocusX);
+			Log.e("lasaty x" , "Y"+ startFocusY);
+
+
+			if(currentx-15 > startFocusX && currenty+15 < startFocusY){
+				frameLayout = new FrameLayout.LayoutParams((windowWidth/2+30),LayoutParams.MATCH_PARENT);
+				viewInflate.setLayoutParams(frameLayout);
+			}else{
+				frameLayout = new FrameLayout.LayoutParams((windowWidth),LayoutParams.MATCH_PARENT);
+				viewInflate.setLayoutParams(frameLayout);
+			}
+
+
+			/*if(viewInflate.getWidth() == windowWidth/2+30){
+				frameLayout = new FrameLayout.LayoutParams((windowWidth),LayoutParams.MATCH_PARENT);
+				viewInflate.setLayoutParams(frameLayout);
+			}else{
+				frameLayout = new FrameLayout.LayoutParams((windowWidth/2+30),LayoutParams.MATCH_PARENT);
+				viewInflate.setLayoutParams(frameLayout);
+			}*/
+		}
+	}
 }

@@ -1,17 +1,22 @@
-<android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/drawerLayout"
+<com.app.glooworkspace.SlideHolder xmlns:android="http://schemas.android.com/apk/res/android"
+   android:id="@+id/slideLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
-- 
+
+    <include
+        android:id="@+id/slide_inflate_layout"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        layout="@layout/inflate_dropdown" />
 
     <LinearLayout
+        android:id="@+id/layoutMain"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@drawable/main_bg"
         android:orientation="vertical"
         android:visibility="visible"
         android:weightSum="4" >
-- 
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -43,7 +48,6 @@
                 android:paddingTop="5dp"
                 android:src="@drawable/menu_option" />
         </RelativeLayout>
-- 
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -70,8 +74,7 @@
                 android:background="@drawable/trans_bg"
                 android:padding="3dp"
                 android:src="@drawable/search" />
-        </LinearLayout>
-- 
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -88,7 +91,7 @@
                 android:text="@string/filter_files"
                 android:textColor="@android:color/white"
                 android:textStyle="bold" />
-- 
+- 
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -126,7 +129,7 @@
                     android:textStyle="bold" />
             </LinearLayout>
         </LinearLayout>
-- 
+- 
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -135,12 +138,11 @@
             android:layout_marginRight="10dp"
             android:layout_marginTop="5dp"
             android:layout_weight="0.45" >
-- 
+- 
 
             <ScrollView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" >
-- 
 
                 <FrameLayout
                     android:layout_width="fill_parent"
@@ -166,7 +168,7 @@
                 </FrameLayout>
             </ScrollView>
         </LinearLayout>
-- 
+- 
 
         <LinearLayout
             android:id="@+id/inflate_BottomBar"
@@ -183,4 +185,4 @@
         </LinearLayout>
     </LinearLayout>
 
-</android.support.v4.widget.DrawerLayout>
+</com.app.glooworkspace.SlideHolder>

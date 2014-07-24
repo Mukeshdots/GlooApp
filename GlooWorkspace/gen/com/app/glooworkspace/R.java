@@ -30,20 +30,21 @@ public final class R {
         public static final int xls=0x7f02000d;
     }
     public static final class id {
-        public static final int dragdrop_hidelayout=0x7f06000b;
-        public static final int dragdrop_showlayout=0x7f060005;
-        public static final int drawerLayout=0x7f060000;
-        public static final int drop_layout=0x7f060007;
-        public static final int imageViewSlider=0x7f060001;
-        public static final int inflate_BottomBar=0x7f060004;
-        public static final int inflate_ImageView=0x7f06000c;
-        public static final int inflate_TextViewName=0x7f06000d;
-        public static final int layout_list_items_hideshadow=0x7f060003;
-        public static final int layout_list_items_show=0x7f060002;
-        public static final int projects_layout=0x7f06000a;
-        public static final int scroll_layout=0x7f060006;
-        public static final int textViewUndo=0x7f060009;
-        public static final int undo_layout=0x7f060008;
+        public static final int dragdrop_showlayout=0x7f060007;
+        public static final int drop_layout=0x7f060009;
+        public static final int imageViewSlider=0x7f060003;
+        public static final int inflate_BottomBar=0x7f060006;
+        public static final int inflate_ImageView=0x7f06000d;
+        public static final int inflate_TextViewName=0x7f06000e;
+        public static final int layoutMain=0x7f060002;
+        public static final int layout_list_items_hideshadow=0x7f060005;
+        public static final int layout_list_items_show=0x7f060004;
+        public static final int projects_layout=0x7f06000c;
+        public static final int scroll_layout=0x7f060008;
+        public static final int slideLayout=0x7f060000;
+        public static final int slide_inflate_layout=0x7f060001;
+        public static final int textViewUndo=0x7f06000b;
+        public static final int undo_layout=0x7f06000a;
     }
     public static final class layout {
         public static final int activity_main=0x7f030000;
