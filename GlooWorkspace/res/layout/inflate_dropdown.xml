@@ -3,12 +3,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/darker_gray"
-    android:orientation="horizontal" >
+    android:orientation="horizontal"
+    android:weightSum="1" >
 
     <LinearLayout
         android:id="@+id/dragdrop_showlayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_weight="0.30"
         android:orientation="vertical"
         android:weightSum="1" >
 
@@ -89,7 +91,7 @@
                 android:gravity="center"
                 android:text="@string/addto_saved_project"
                 android:textColor="@android:color/darker_gray"
-                android:textSize="12dp" />
+                android:textAppearance="?android:attr/textAppearanceMedium"/>
 
             <ScrollView
                 android:layout_width="match_parent"
@@ -104,6 +106,14 @@
                     android:orientation="vertical" />
             </ScrollView>
         </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/dragdrop_hidelayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="0.70"
+        android:orientation="vertical" >
     </LinearLayout>
 
 </LinearLayout>

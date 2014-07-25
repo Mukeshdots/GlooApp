@@ -8,43 +8,35 @@ import android.app.Activity;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.DragEvent;
 import android.view.Gravity;
 import android.view.MotionEvent;
-import android.view.ScaleGestureDetector;
-import android.view.ScaleGestureDetector.SimpleOnScaleGestureListener;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnDragListener;
-import android.view.View.OnTouchListener;
 import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
-public class MainActivity extends Activity implements OnClickListener{
+import com.navdrawer.SimpleSideDrawer;
+
+public class MainActivity extends Activity implements OnClickListener {
 
 	private String[] listviewItemsName;
 	private int[] listviewItemsImage;
 	private ArrayList<MergeData> mergeListItems = new ArrayList<MergeData>();
-	private LinearLayout dropLayout, listShowLayout , listHideLayout , projectsLayout , layoutMain;	
+	private ArrayList<Integer> arrClickedItems = new ArrayList<Integer>();
+	private LinearLayout dropLayout, listShowLayout , listHideLayout , projectsLayout;	
 	private ImageView imageViewSlider;
 	private ScrollView scrollLayout;
-	private TextView undo;
-	public  static SlideHolder slide_holder;
-	private static View viewInflate;
-	private int windowWidth;
-	private ScaleGestureDetector scaleGestureDetector;
-	private FrameLayout.LayoutParams frameLayout ;
-	private int firstClicked = -1 , clicked=-1 , firstTimeClicked = 0;
-	private ArrayList<Integer> arrClickedItems = new ArrayList<Integer>();
+	public  SimpleSideDrawer slide_me;
+	private int longItemPressed = -1 , singleItemPressed = -1 , initialClickCheck = 0;
 	private boolean islongClicked = false;
 
 	@Override
@@ -54,14 +46,13 @@ public class MainActivity extends Activity implements OnClickListener{
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,WindowManager.LayoutParams.FLAG_FULLSCREEN);
 		setContentView(R.layout.activity_main);
 
-		onViewWidth();
-		onListItemsName(); // Add array of the items name
-		onListItemsImage(); // Add array of the items image
-		onMergeListViewItems(); // merge both the items array to add in a single list adapter
-		initView(); // set all views of the layout include id
-		setData(); 
-		onItemClick(); // on items click event
-		onDrop(); // set items on drop
+		onListItemsName(); // Add array of the items name.
+		onListItemsImage(); // Add array of the items image.
+		onMergeListViewItems(); // merge both the items array to add in a single list adapter.
+		initView(); // set all views of the layout include id.
+		arrangeListData(); // add items in linear layout to get clicked view of item. 
+		onItemClick(); // on items click event.
+		onDrop(); // set items on drop.
 	}
 
 	private void onListItemsName() {
@@ -85,98 +76,21 @@ public class MainActivity extends Activity implements OnClickListener{
 		}
 	}
 
-	private void onViewWidth() {
-		DisplayMetrics displaymetrics = new DisplayMetrics();
-		getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
-		windowWidth = displaymetrics.widthPixels;
-		scaleGestureDetector = new ScaleGestureDetector(this, new OnPinchListener());
-	}
-
 	private void initView() {
 
-		layoutMain = (LinearLayout) findViewById(R.id.layoutMain);
 		listShowLayout = (LinearLayout) findViewById(R.id.layout_list_items_show);
 		listHideLayout = (LinearLayout) findViewById(R.id.layout_list_items_hideshadow);
 		imageViewSlider = (ImageView) findViewById (R.id.imageViewSlider);
+
 		// add sliding layout and inflate layout in it and get items id
-		//slide_me = new SimpleSideDrawer (MainActivity.this);
-		slide_holder = (SlideHolder) findViewById(R.id.slideLayout);
-		//slide_me.setRightBehindContentView (R.layout.inflate_dropdown);
-
-		viewInflate = (View) findViewById(R.id.slide_inflate_layout);
-		frameLayout = new FrameLayout.LayoutParams((windowWidth/2+30),LayoutParams.MATCH_PARENT);
-		viewInflate.setLayoutParams(frameLayout);
-
+		slide_me = new SimpleSideDrawer (MainActivity.this);
+		slide_me.setRightBehindContentView (R.layout.inflate_dropdown);
 
 		projectsLayout = (LinearLayout) findViewById (R.id.projects_layout);
 		dropLayout = (LinearLayout) findViewById (R.id.drop_layout);
 		scrollLayout = (ScrollView) findViewById (R.id.scroll_layout);
-		undo = (TextView) findViewById(R.id.textViewUndo);
-
-		undo.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				/*	slide_me.openRightSide();
-				dragDropHide.setVisibility(View.VISIBLE);
-				dragDropShow.setBackgroundResource(android.R.color.transparent);*/
-			}
-		});
-
-		scrollLayout.setOnTouchListener(new OnTouchListener() {
-
-			@Override
-			public boolean onTouch(View v, MotionEvent event) {
-				// TODO Auto-generated method stub
-				scaleGestureDetector.onTouchEvent(event);
-				return true;
-			}
-		});
-		
-		layoutMain.setOnDragListener(new OnDragListener() {
-
-			public boolean onDrag(View v, DragEvent event) {
-				switch (event.getAction()) {
-				/*case DragEvent.ACTION_DRAG_ENTERED:
-					if(slide_me.isClosed()){
-						slide_me.toggleRightDrawer();
-					}
-					slide_holder.toggle();
-					Log.e("ACTION_DRAG_ENTERED " , "ACTION_DRAG_ENTERED ");
-					v.setBackgroundColor(Color.GRAY);
-					break;
-				case DragEvent.ACTION_DRAG_EXITED:
-					if(!slide_me.isClosed()){
-						slide_me.closeRightSide();
-					}
-					slide_holder.toggle();
-					Log.e("ACTION_DRAG_EXITED " , "ACTION_DRAG_EXITED ");
-					v.setBackgroundColor(Color.TRANSPARENT);
-					break;
-				 */
-				case DragEvent.ACTION_DRAG_STARTED:
-					Log.e("ACTION_DRAG_STARTED " , "ACTION_DRAG_STARTED ");
-					return true;
-				case DragEvent.ACTION_DRAG_ENTERED:
-					slide_holder.toggle();
-					Log.e("ACTION_DRAG_ENTERED " , "ACTION_DRAG_ENTERED ");
-					break;
-					
-					/*
-				case DragEvent.ACTION_DRAG_ENDED:
-					Log.e("ACTION_DRAG_ENDED " , "ACTION_DRAG_ENDED ");
-					break;
-
-				case DragEvent.ACTION_DROP:
-					v.setBackgroundColor(Color.TRANSPARENT);
-					Log.e("ACTION_DROP " , "ACTION_DROP ");
-					return processDrop(event);*/
-				}
-				return false;
-			}
-		});
 
 	}
-
 
 	private void onItemClick() {
 		imageViewSlider.setOnClickListener(this);	
@@ -189,17 +103,24 @@ public class MainActivity extends Activity implements OnClickListener{
 			public boolean onDrag(View v, DragEvent event) {
 				switch (event.getAction()) {
 				case DragEvent.ACTION_DRAG_ENTERED:
+					if(slide_me.isClosed()){
+						slide_me.toggleRightDrawer();
+					}
 					Log.e("ACTION_DRAG_ENTERED " , "ACTION_DRAG_ENTERED ");
 					v.setBackgroundColor(Color.GRAY);
 					break;
 				case DragEvent.ACTION_DRAG_EXITED:
+					if(!slide_me.isClosed()){
+						slide_me.toggleRightDrawer();
+					}
 					Log.e("ACTION_DRAG_EXITED " , "ACTION_DRAG_EXITED ");
 					v.setBackgroundColor(Color.TRANSPARENT);
 					break;
-				 
+
 				case DragEvent.ACTION_DRAG_STARTED:
 					Log.e("ACTION_DRAG_STARTED " , "ACTION_DRAG_STARTED ");
 					return true;
+
 				case DragEvent.ACTION_DRAG_ENDED:
 					Log.e("ACTION_DRAG_ENDED " , "ACTION_DRAG_ENDED ");
 					break;
@@ -224,30 +145,30 @@ public class MainActivity extends Activity implements OnClickListener{
 
 		LinearLayout layoutProject = new LinearLayout(this);
 		layoutProject.setOrientation(LinearLayout.VERTICAL);
-		layoutProject.setGravity(Gravity.CENTER_VERTICAL);
+		layoutProject.setGravity(Gravity.CENTER_HORIZONTAL);
 
 		LinearLayout layoutProjectHeading = new LinearLayout(this);
 		topLayoutHeadingFolder(layoutProjectHeading);
 		layoutProject.addView(layoutProjectHeading);
 
-		for(int i= 0 ; i <arrClickedItems.size() ; i++){
-			int tag = arrClickedItems.get(i);
+		for(int dropitemCount = 0 ; dropitemCount < arrClickedItems.size() ; dropitemCount++){
+			int tag = arrClickedItems.get(dropitemCount);
 			LinearLayout layoutAddDropInflate = new LinearLayout(this);
 			LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
-			params.setMargins(0,5,0,0);
+			params.setMargins(0,10,0,0);
 			layoutAddDropInflate.setLayoutParams(params);
-			layoutAddDropInflate.setOrientation(LinearLayout.HORIZONTAL);
-			layoutAddDropInflate.setGravity(Gravity.CENTER_VERTICAL);
+			layoutAddDropInflate.setOrientation(LinearLayout.VERTICAL);
+			layoutAddDropInflate.setGravity(Gravity.CENTER_HORIZONTAL);
 
 			ImageView imageViewAddDropInflate = new ImageView(this);
-			imageViewAddDropInflate.setLayoutParams(new LinearLayout.LayoutParams(70,70));
+			imageViewAddDropInflate.setLayoutParams(new LinearLayout.LayoutParams(90,90));
 			imageViewAddDropInflate.setScaleType(ScaleType.FIT_XY);
 			imageViewAddDropInflate.setImageResource(mergeListItems.get(tag).getListViewInflateImage());
 
 			TextView textViewAddDropInflate= new TextView(this);
 			textViewAddDropInflate.setPadding(10, 0,0,0);
 			textViewAddDropInflate.setText(mergeListItems.get(tag).getListViewInflateName());
-			textViewAddDropInflate.setGravity(Gravity.CENTER_VERTICAL);
+			textViewAddDropInflate.setGravity(Gravity.CENTER_HORIZONTAL);
 
 			layoutAddDropInflate.addView(imageViewAddDropInflate);
 			layoutAddDropInflate.addView(textViewAddDropInflate);
@@ -258,13 +179,13 @@ public class MainActivity extends Activity implements OnClickListener{
 		dropLayout.addView(layoutProject);
 		bottomLayoutFolder();
 
-		/*if(slide_me.isClosed()){
+		if(slide_me.isClosed()){
 			slide_me.toggleRightDrawer();
 		}
 		else{
 			slide_me.closeRightSide();
-		}*/
-		slide_holder.toggle();
+		}
+
 	}
 
 	private void topLayoutHeadingFolder(LinearLayout layoutProjectHeading) {
@@ -314,14 +235,12 @@ public class MainActivity extends Activity implements OnClickListener{
 	public void onClick(View v) {
 		switch (v.getId()) {
 		case R.id.imageViewSlider:
-			/*if(slide_me.isClosed()){
-			//	slide_me.openRightSide();
+			if(slide_me.isClosed()){
 				slide_me.toggleRightDrawer();
 			}
 			else{
 				slide_me.closeRightSide();
-			}*/
-			slide_holder.toggle();
+			}
 			break;
 		default:
 			break;
@@ -329,11 +248,11 @@ public class MainActivity extends Activity implements OnClickListener{
 	}
 
 	@TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-	private void setData(){
+	private void arrangeListData(){
 
-		for(int i=0; i<mergeListItems.size() ; i++){
+		for(int mergeitemCount = 0; mergeitemCount < mergeListItems.size() ; mergeitemCount++){
 
-			LinearLayout layoutInflate = new LinearLayout(this);
+			final LinearLayout layoutInflate = new LinearLayout(this);
 			LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
 			params.setMargins(0,5,0,0);
 			layoutInflate.setLayoutParams(params);
@@ -344,48 +263,49 @@ public class MainActivity extends Activity implements OnClickListener{
 			ImageView imageIcon = new ImageView(this);
 			imageIcon.setLayoutParams(new LinearLayout.LayoutParams(70, 70));
 			imageIcon.setScaleType(ScaleType.FIT_XY);
-			imageIcon.setImageResource(mergeListItems.get(i).getListViewInflateImage());
+			imageIcon.setImageResource(mergeListItems.get(mergeitemCount).getListViewInflateImage());
 
 			TextView textView = new TextView(this);
 			textView.setPadding(10, 0,0,0);
-			textView.setText(mergeListItems.get(i).getListViewInflateName());
+			textView.setText(mergeListItems.get(mergeitemCount).getListViewInflateName());
 			textView.setGravity(Gravity.CENTER_VERTICAL);
 
 			layoutInflate.addView(imageIcon);
 			layoutInflate.addView(textView);
-			layoutInflate.setTag(i);
+			layoutInflate.setTag(mergeitemCount);
 
 			listShowLayout.addView(layoutInflate);
-
 
 			layoutInflate.setOnLongClickListener(new View.OnLongClickListener() {
 				@Override
 				public boolean onLongClick(View v) {
 					int tag = (Integer) v.getTag();
 					int tagItem;
-					if(firstClicked == -1 || clicked == tag){
+					if(longItemPressed == -1 || singleItemPressed == tag){
 						tagItem = tag;
 						if(islongClicked == false){
 							v.setBackgroundResource(android.R.color.darker_gray);
 							islongClicked = true;
-							clicked = tagItem;
-							firstClicked = tagItem;
+							singleItemPressed = tagItem;
+							longItemPressed = tagItem;
 
-							firstTimeClicked = 1;
+							initialClickCheck = 1;
 							arrClickedItems.add(tag);
 
 							addListSelectedItemsLayout(tag);
+
+
 
 						}
 						else{
 							v.setBackground(null);
 							islongClicked = false;
-							firstClicked = -1;
+							longItemPressed = -1;
 
-							for(int i=0 ; i<arrClickedItems.size() ; i++){
-								if(tag == arrClickedItems.get(i)){
-									arrClickedItems.remove(i);	
-									listHideLayout.removeViewAt(i);
+							for(int removeMergeItem = 0 ; removeMergeItem < arrClickedItems.size() ; removeMergeItem++){
+								if(tag == arrClickedItems.get(removeMergeItem)){
+									arrClickedItems.remove(removeMergeItem);	
+									listHideLayout.removeViewAt(removeMergeItem);
 								}
 							}
 
@@ -403,25 +323,25 @@ public class MainActivity extends Activity implements OnClickListener{
 
 					if(v.isLongClickable()){
 						int tag = (Integer) v.getTag();
-						if(clicked == tag){
-							if(firstTimeClicked == 1){
-								firstTimeClicked = 0;
+						if(singleItemPressed == tag){
+							if(initialClickCheck == 1){
+								initialClickCheck = 0;
 							}else{
 								v.setBackground(null);
 								islongClicked = false;
-								firstClicked = -1;
+								longItemPressed = -1;
 
-								for(int i=0 ; i<arrClickedItems.size() ; i++){
-									if(tag == arrClickedItems.get(i)){
-										arrClickedItems.remove(i);	
-										listHideLayout.removeViewAt(i);
+								for(int removeSingleItem = 0 ; removeSingleItem < arrClickedItems.size() ; removeSingleItem++){
+									if(tag == arrClickedItems.get(removeSingleItem)){
+										arrClickedItems.remove(removeSingleItem);	
+										listHideLayout.removeViewAt(removeSingleItem);
 									}
 								}
 							}
 						}
 
 						else{
-							if(clicked != -1){
+							if(singleItemPressed != -1){
 								if(islongClicked == true){
 									if(v.getBackground() == null){
 										v.setBackgroundResource(android.R.color.darker_gray);
@@ -431,21 +351,20 @@ public class MainActivity extends Activity implements OnClickListener{
 
 									}else{
 										v.setBackground(null);
-										//	v.setBackgroundResource(android.R.color.transparent);
-										for(int i=0 ; i<arrClickedItems.size() ; i++){
-											if(tag == arrClickedItems.get(i)){
-												arrClickedItems.remove(i);	
-												listHideLayout.removeViewAt(i);
+										for(int removeSingleLongClickedItem = 0 ; removeSingleLongClickedItem < arrClickedItems.size() ; removeSingleLongClickedItem++){
+											if(tag == arrClickedItems.get(removeSingleLongClickedItem)){
+												arrClickedItems.remove(removeSingleLongClickedItem);	
+												listHideLayout.removeViewAt(removeSingleLongClickedItem);
 											}
 										}
 									}
 								}
 								else{
 									v.setBackground(null);
-									for(int i=0 ; i<arrClickedItems.size() ; i++){
-										if(tag == arrClickedItems.get(i)){
-											arrClickedItems.remove(i);	
-											listHideLayout.removeViewAt(i);
+									for(int removeLongClickedItems = 0 ; removeLongClickedItems < arrClickedItems.size() ; removeLongClickedItems++){
+										if(tag == arrClickedItems.get(removeLongClickedItems)){
+											arrClickedItems.remove(removeLongClickedItems);	
+											listHideLayout.removeViewAt(removeLongClickedItems);
 										}
 									}
 								}
@@ -455,7 +374,6 @@ public class MainActivity extends Activity implements OnClickListener{
 					}
 				}
 			});
-
 
 			layoutInflate.setOnTouchListener(new View.OnTouchListener() {
 				@Override
@@ -473,7 +391,6 @@ public class MainActivity extends Activity implements OnClickListener{
 				}
 			});
 		}
-
 	}
 
 	private void addListSelectedItemsLayout(int tagNo) {
@@ -501,57 +418,4 @@ public class MainActivity extends Activity implements OnClickListener{
 		listHideLayout.addView(layoutSelectedItem);
 	}
 
-
-	private class OnPinchListener extends SimpleOnScaleGestureListener {
-
-		float startingSpan; 
-		float endSpan;
-		float startFocusX;
-		float startFocusY;
-
-		public boolean onScaleBegin(ScaleGestureDetector detector) {
-			startingSpan = detector.getCurrentSpan();
-			startFocusX = detector.getFocusX();
-			startFocusY = detector.getFocusY();
-			return true;
-		}
-
-
-		public boolean onScale(ScaleGestureDetector detector) {
-
-			/*frameLayout = new FrameLayout.LayoutParams((int)detector.getFocusX(), (int) detector.getFocusY());
-			viewInflate.setLayoutParams(frameLayout);*/
-			return true;
-		}
-
-		public void onScaleEnd(ScaleGestureDetector detector) {
-
-			float currentx = detector.getFocusX();
-			float currenty = detector.getFocusY();
-
-
-			Log.e("Current x" , "X"+ currentx);
-			Log.e("Current y" , "y"+ currenty);
-			Log.e("last x" , "X"+ startFocusX);
-			Log.e("lasaty x" , "Y"+ startFocusY);
-
-
-			if(currentx-15 > startFocusX && currenty+15 < startFocusY){
-				frameLayout = new FrameLayout.LayoutParams((windowWidth/2+30),LayoutParams.MATCH_PARENT);
-				viewInflate.setLayoutParams(frameLayout);
-			}else{
-				frameLayout = new FrameLayout.LayoutParams((windowWidth),LayoutParams.MATCH_PARENT);
-				viewInflate.setLayoutParams(frameLayout);
-			}
-
-
-			/*if(viewInflate.getWidth() == windowWidth/2+30){
-				frameLayout = new FrameLayout.LayoutParams((windowWidth),LayoutParams.MATCH_PARENT);
-				viewInflate.setLayoutParams(frameLayout);
-			}else{
-				frameLayout = new FrameLayout.LayoutParams((windowWidth/2+30),LayoutParams.MATCH_PARENT);
-				viewInflate.setLayoutParams(frameLayout);
-			}*/
-		}
-	}
 }
